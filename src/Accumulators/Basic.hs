@@ -2,57 +2,78 @@
 
 module Accumulators.Basic where
 
-import Control.Monad.IO.Class (liftIO)
-import Data.Conduit (($$), (=$=), (=$)
-                    , Conduit, Sink, Source
-                    , await, yield)
-import qualified Data.Conduit.List as CL
-import Data.Sequence
+import Data.Conduit (await
+                    , yield
+                    , Conduit)
 import Prelude hiding (head, length, drop)
 
+import Types(Row(..)
+            , RowVal(..)
+            , rowzip
+            , preCompareMaxMin
+            , sumRowVals
+            , nullRowCount)
 
-averageLen :: Int
-averageLen = 10
+type NullCounts = Row
+type Minima = Row
+type Maxima = Row
+type Sums = Row
 
-type Size = Int
-type RunningSum = Int
-
-
-source :: Source IO Int
-source = CL.sourceList [1..1000]
-
-
-conduit :: RunningSum -> Size -> Seq Int -> Conduit Int IO Int
-conduit total len sequence = do
+conduitFunc :: (Row -> Row -> Row) -> Row -> Conduit Row IO Row
+conduitFunc f record = do
   val <- await
   case val of
     Nothing -> return ()
-    Just n -> do
-      let newtotal = total + n
-      let newsequence = (|>) sequence n
-      if | length newsequence < len -> conduit newtotal len newsequence
-         | length newsequence == len -> do
-             yield $ newtotal `div` (fromIntegral len)
-             conduit newtotal len newsequence
-         | otherwise -> do
-             let newSeq = viewl newsequence
-             case newSeq of
-               EmptyL -> return () -- shouldn't happen: we just appended to it above?
-               (a :< seq) -> do
-                 let dropFrontTotal = newtotal - a
-                 yield $ dropFrontTotal `div` (fromIntegral len)
-                 conduit dropFrontTotal len seq
+    Just input -> do
+      let updatedRecord = f record input
+      yield updatedRecord
+      conduitFunc f updatedRecord
 
-sink :: Sink Int IO ()
-sink = do
-  val <- await
-  case val of
-    Nothing -> return ()
-    Just n -> do
-      liftIO $ print n
-      sink
+conduitCount :: Conduit Row IO Int
+conduitCount = do
+    val <- await
+    case val of
+      Nothing -> return ()
+      Just _ -> do
+        yield 1
+        conduitCount
 
-main :: IO ()
-main = do
-  let initial = fromList []
-  source $$ conduit 0 averageLen initial =$ sink
+conduitSums :: Sums -> Conduit Row IO Sums
+conduitSums = conduitFunc summedVals
+
+conduitNulls :: NullCounts -> Conduit Row IO NullCounts
+conduitNulls = conduitFunc nullCounts
+
+conduitMax :: Maxima -> Conduit Row IO Maxima
+conduitMax = conduitFunc rowMax
+
+conduitMin :: Minima -> Conduit Row IO Minima
+conduitMin = conduitFunc rowMin
+
+compareMaxMin :: (Double -> Double -> Double) -> (RowVal, RowVal) -> RowVal
+compareMaxMin f (NumberVal x, NumberVal y) = NumberVal $ f x y
+compareMaxMin _ _ = error "Need to have two NumberVals to run this function"
+
+summedVals :: Sums -> Row -> Sums
+summedVals record input = Row $ map (NumberVal . sumRowVals) $ rowzip record input
+
+nullCounts :: NullCounts -> Row -> Sums
+nullCounts record input = summedVals record (nullRowCount input)
+
+rowMax :: Maxima -> Row -> Maxima
+rowMax record input =
+  let
+    vals = (map preCompareMaxMin $ rowzip record input)
+    rowValMax (NumberVal x, NumberVal y) = NumberVal $ max x y
+    rowValMax _ = error "rowValMax should only compare two NumberVals"
+  in Row $ map rowValMax vals
+
+rowMin :: Minima -> Row -> Minima
+rowMin record input =
+  let
+    vals = (map preCompareMaxMin $ rowzip record input)
+    rowValMin (NumberVal 0, NumberVal 0) = NumberVal 0
+    rowValMin (NumberVal 0, NumberVal j) = NumberVal j
+    rowValMin (NumberVal i, NumberVal j) = NumberVal (min i j)
+    rowValMin _ = error "rowValMin should only compare two NumberVals"
+  in Row $ map rowValMin vals

@@ -20,9 +20,14 @@ each of which will tell us:
 1. The name of the column, and
 2. The type of the column.
 -}
+parseHead :: (Monad m) => String -> m ColumnHeader
+parseHead input = case P.parse parseHead' "unknown" input of
+    Left _ -> error "Failed to parse input header: bailing out"
+    Right a -> return a
+
 -- Todo: Will choke on trailing comma.
-parseHead :: P.Parser ColumnHeader
-parseHead = do
+parseHead' :: P.Parser ColumnHeader
+parseHead' = do
   chdr <- ColumnHeader <$> parseHeadCol `P.sepBy` P.char ','
   P.spaces
   P.eof
@@ -57,11 +62,11 @@ We need a ColumnHeader to know which parser to apply to each row value.
 We plan to partially apply the `parseRowVal` to each `ColumnHead`
 so we can use this list of functions to parse the corresponding row values.
 -}
-parseRow :: (Monad m) => ColumnHeader -> String -> m [RowVal]
+parseRow :: (Monad m) => ColumnHeader -> String -> m Row
 parseRow (ColumnHeader chdr) input = do
   let parsingFuncs = parseRowVal <$> chdr
   let splittedRow = splitOn "," input  -- Using String splitter here...
-  return $ foldAp parsingFuncs splittedRow
+  return $ Row $ foldAp parsingFuncs splittedRow
 
 foldAp :: [P.Parser RowVal] -> [String] -> [RowVal]
 foldAp [] _ = []
@@ -76,13 +81,13 @@ parseRowVal :: ColumnHead -> P.Parser RowVal
 parseRowVal ch = case coltype ch of
   NumberType -> parseRowNull
     <|> parseRowNumber
-    P.<?> "Number of Null expected"
+    P.<?> "Number or Null expected"
   StringType -> parseRowNull
     <|> P.try parseRowString
     P.<?> "String or Null expected"
 
 parseRowString ::  P.Parser RowVal
-parseRowString = String <$> T.pack <$> P.many1 P.alphaNum
+parseRowString = StringVal <$> T.pack <$> P.many1 P.alphaNum
 
 parseRowNumber :: P.Parser RowVal
 parseRowNumber = do
@@ -92,7 +97,7 @@ parseRowNumber = do
      realPart <- realN
      fracPart <- fracN
      expPart  <- expN
-     return $ Number $ doNeg $ (realPart + fracPart) * 10 ** expPart
+     return $ NumberVal $ doNeg $ (realPart + fracPart) * 10 ** expPart
 
 parseRowNull :: P.Parser RowVal
 parseRowNull = P.eof >> return Null
