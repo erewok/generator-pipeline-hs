@@ -7,6 +7,7 @@ module Types (
     , ColumnType(..)
     , Row(..)
     , rowlen
+    , headerlen
     , rowzip
     , preCompareMaxMin
     , sumRowVals
@@ -32,6 +33,9 @@ data RowVal = NumberVal Double
             | Null
             deriving (Show, Eq)
 
+headerlen :: ColumnHeader -> Int
+headerlen (ColumnHeader vals) = length vals
+
 rowlen :: Row -> Int
 rowlen (Row vals) = length vals
 
@@ -41,6 +45,7 @@ rowzip (Row firstrow) (Row secondrow) = zip firstrow secondrow
 -- In practice we are committed to putting records on left
 -- (which means always NumberVals on left)
 -- ToDo: this should be enforced by the compiler...
+-- ToDo: handle errors better
 
 -- We throw away Nulls when comparing Max/Min
 preCompareMaxMin :: (RowVal, RowVal) -> (RowVal, RowVal)

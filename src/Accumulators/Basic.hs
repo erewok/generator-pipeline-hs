@@ -14,6 +14,8 @@ import Types(Row(..)
             , sumRowVals
             , nullRowCount)
 
+
+
 type NullCounts = Row
 type Minima = Row
 type Maxima = Row
@@ -23,20 +25,22 @@ conduitFunc :: (Row -> Row -> Row) -> Row -> Conduit Row IO Row
 conduitFunc f record = do
   val <- await
   case val of
-    Nothing -> return ()
+    Nothing -> do
+      yield record
+      return ()
     Just input -> do
       let updatedRecord = f record input
-      yield updatedRecord
+      -- yield updatedRecord
       conduitFunc f updatedRecord
 
-conduitCount :: Conduit Row IO Int
-conduitCount = do
+conduitCount :: Int -> Conduit Row IO Row
+conduitCount n = do
     val <- await
     case val of
-      Nothing -> return ()
-      Just _ -> do
-        yield 1
-        conduitCount
+      Nothing -> do
+        yield $ Row [NumberVal $ fromIntegral n]
+        return ()
+      Just _ -> conduitCount (n + 1)
 
 conduitSums :: Sums -> Conduit Row IO Sums
 conduitSums = conduitFunc summedVals
@@ -60,6 +64,10 @@ summedVals record input = Row $ map (NumberVal . sumRowVals) $ rowzip record inp
 nullCounts :: NullCounts -> Row -> Sums
 nullCounts record input = summedVals record (nullRowCount input)
 
+
+-- The following implementations of Max/Min are flawed.
+-- would almost be better (more honest) to put in the lowest possible number here
+-- and highest possible number for min
 rowMax :: Maxima -> Row -> Maxima
 rowMax record input =
   let
@@ -68,6 +76,8 @@ rowMax record input =
     rowValMax _ = error "rowValMax should only compare two NumberVals"
   in Row $ map rowValMax vals
 
+
+-- fix min: see note above
 rowMin :: Minima -> Row -> Minima
 rowMin record input =
   let

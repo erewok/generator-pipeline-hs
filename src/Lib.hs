@@ -1,62 +1,101 @@
-{-# LANGUAGE MultiWayIf, OverloadedStrings #-}
-{-
-λ> let testhead = "\"sessionId (text)\",\"page (text)\",\"latency (number)\",\"timeOnPage (number)\""
-λ> let testrow1 = "38b56b0a,explore,44,125.591"
-λ> let testrow2 =  "38b56b0a,,,125.591"
-λ> chdr <- parseHead testhead
-λ> let res1 = parseRow chdr1 testrow1
-λ> res1
-[String "38b56b0a",String "explore",Number 44.0,Number 125.591]
-λ> let res2 = parseRow chdr1 testrow2
-λ> res2
-[String "38b56b0a",Null,Null,Number 125.591]
--}
+{-# LANGUAGE MultiWayIf, OverloadedStrings, TemplateHaskell #-}
+
 module Lib where
 
 import Control.Monad.IO.Class (liftIO)
-import Data.Conduit (($$), (=$=), (=$)
-                    , Conduit, Sink, Source
-                    , await, yield
-                    , ZipConduit
-                    , getZipConduit)
+import Data.Conduit
+import Control.Lens
 import qualified Data.Conduit.List as CL
-import Data.Sequence hiding (zip, replicate)
-import qualified Data.Text as T
-import Prelude hiding (head, length, drop)
-import qualified Data.Vector.Unboxed as V
 
 import Accumulators.Basic
 import Parser(parseHead
              , parseRow)
 import Types(Row(..)
             , RowVal(..)
-            , rowlen
-            , rowzip
-            , preCompareMaxMin
-            , sumRowVals
-            , nullRowCount)
+            , rowlen)
 
-{- things to keep track of
-For all columns, compute:
-count
-null count
-For number columns, compute:
-minimum
-maximum
-average
-For text columns, compute:
-count(shortest value)
-count(longest value)
-average length
-break ties alphabetically as needed
--}
+
+data Result = MaximaRow [RowVal]
+            | MinimaRow [RowVal]
+            | SumRow [RowVal]
+            | NullCountRow [RowVal]
+            | CountRow [RowVal]
+            | AverageRow [RowVal]
+            | Incomplete
+            deriving (Show, Eq)
+
+
+data ResultRows = ResultRow {
+  _maxima :: Result
+  , _minima :: Result
+  , _sums :: Result
+  , _nulls :: Result
+  , _counts :: Result
+  , _averages :: Result
+  } deriving (Show)
+
+makeLenses ''ResultRows
+
+modifyResultRow :: Int -> Row -> ResultRows -> ResultRows
+modifyResultRow 0 (Row row) result = let
+  newresultEntry = MaximaRow row
+  in set maxima newresultEntry result
+modifyResultRow 1 (Row row) result = let
+  newresultEntry = MinimaRow row
+  in set minima newresultEntry result
+modifyResultRow 2 (Row row) result = let
+  newresultEntry = SumRow row
+  in set sums newresultEntry result
+modifyResultRow 3 (Row row) result = let
+  newresultEntry = NullCountRow row
+  in set nulls newresultEntry result
+modifyResultRow 4 (Row row) result = let
+  nullcounts = result^.nulls
+  (NullCountRow nulltotals) = nullcounts
+  [NumberVal total] = row
+  countresult = CountRow $ fmap (\(NumberVal n) -> NumberVal $ total - n) nulltotals
+  in set counts countresult result
+modifyResultRow _ _ _ = error "Out of bounds call to modifyResultRow"
+
+computeAverages :: ResultRows -> ResultRows
+computeAverages result = let
+  (SumRow sumVals) = result^.sums
+  (CountRow countVals) = result^.counts
+  averager (NumberVal a) (NumberVal b) = NumberVal $ a / b
+  sumCountTogether = zipWith averager sumVals countVals
+  newresultEntry = AverageRow sumCountTogether
+  in set averages newresultEntry result
+     
+conduitMaxMin :: Row -> ZipConduit Row Row IO ()
+conduitMaxMin initial = ZipConduit (conduitMax initial) <* ZipConduit (conduitMin initial)
+
+conduitSumsNulls :: Row -> ZipConduit Row Row IO ()
+conduitSumsNulls initial = ZipConduit (conduitSums initial) <* ZipConduit (conduitNulls initial)
+
+conduitSummary :: Int -> ResultRows -> Conduit Row IO ResultRows
+conduitSummary n output = do
+  val <- await
+  case val of
+    Nothing -> do
+      let newResult = computeAverages output
+      yield newResult
+      return ()
+    Just row -> do
+      let newResult = modifyResultRow n row output
+      conduitSummary (n+1) newResult
+      
+conduit :: Row -> ConduitM Row Row IO ()
+conduit row = do
+  let initial = columnRecorderInit row 
+  getZipConduit $ conduitMaxMin initial <* conduitSumsNulls initial <* ZipConduit (conduitCount 0)
+
 source :: Source IO Row
 source = do
   header <- parseHead sourceHead
   rows <- mapM (parseRow header) sourcedata
   CL.sourceList rows
   
-sink :: Sink Row IO ()
+sink :: Sink ResultRows IO ()
 sink = do
   val <- await
   case val of
@@ -65,23 +104,21 @@ sink = do
       liftIO $ print n
       sink
 
-setup :: IO ()
+-- Example of tying them together
+setup :: IO ()      
 setup = do
   header <- parseHead sourceHead
   row <- parseRow header (sourcedata !! 2)
-  let initial = columnRecorderInit row
-  source $$ conduitMin initial =$ sink
-
--- main :: IO ()
--- main = do
---   let initial = fromList []
---   sourcedata $$ conduit 0 0 initial =$ sink
---sink = CL.mapM_ print
+  source $$ conduit row =$= conduitSummary 0 initialResult =$ sink
 
 columnRecorderInit :: Row -> Row
 columnRecorderInit row = Row $ replicate (rowlen row) (NumberVal 0)
 
--- Sample source data
+initialResult :: ResultRows
+initialResult = ResultRow Incomplete Incomplete Incomplete Incomplete Incomplete Incomplete 
+
+
+-- Sample source data for testing
 sourceHead :: String
 sourceHead = "\"sessionId (text)\",\"page (text)\",\"latency (number)\",\"timeOnPage (number)\""
 
