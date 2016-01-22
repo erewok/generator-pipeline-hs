@@ -1,35 +1,36 @@
-	Fri Jan 22 14:48 2016 Time and Allocation Profiling Report  (Final)
+	Fri Jan 22 15:18 2016 Time and Allocation Profiling Report  (Final)
 
-	   generator-pipeline-exe +RTS -N -p -hy -RTS /Users/eraker/haskell_programming/wagon_proj/generator 100000
+	   generator-pipeline-exe +RTS -N -p -RTS ../generator 1000000
 
-	total time  =        4.17 secs   (4172 ticks @ 1000 us, 1 processor)
-	total alloc = 7,709,126,584 bytes  (excludes profiling overheads)
+	total time  =       79.54 secs   (79543 ticks @ 1000 us, 1 processor)
+	total alloc = 77,564,361,040 bytes  (excludes profiling overheads)
 
 COST CENTRE          MODULE             %time %alloc
 
-realN                Parser              26.8   24.8
-fracN1               Parser              16.6   13.9
-parseRowString       Parser               9.1   12.0
-parseRow.splittedRow Parser               8.7    6.1
-MAIN                 MAIN                 7.7   23.3
-rowzip               Types                4.9    1.7
-summedVals           Accumulators.Basic   3.3    1.7
-parseRowNull         Parser               2.4    2.8
-foldAp               Parser               2.3    2.9
-rowMax.vals          Accumulators.Basic   2.1    0.7
-sumRowVals           Types                2.0    0.2
-rowMax               Accumulators.Basic   1.8    0.7
-rowMin               Accumulators.Basic   1.5    0.7
-rowMin.vals          Accumulators.Basic   1.4    0.7
-parseRowNumber       Parser               1.4    2.1
-preCompareMaxMin     Types                1.1    0.2
-expN1                Parser               1.1    1.5
+realN                Parser              14.7   24.7
+rowzip               Types               12.5    1.7
+rowMax.vals          Accumulators.Basic  11.8    0.7
+parseRow.splittedRow Parser              10.0    6.1
+fracN1               Parser               8.8   13.8
+parseRowString       Parser               5.9   11.9
+rowMax               Accumulators.Basic   5.1    0.7
+rowMin.vals          Accumulators.Basic   4.5    0.7
+MAIN                 MAIN                 3.9   23.8
+summedVals           Accumulators.Basic   3.4    1.7
+rowMax.rowValMax     Accumulators.Basic   2.8    0.0
+rowMin               Accumulators.Basic   2.7    0.7
+preCompareMaxMin     Types                2.7    0.2
+sumRowVals           Types                2.6    0.2
+foldAp               Parser               2.1    2.9
+parseRowNull         Parser               1.1    2.8
+expN1                Parser               0.8    1.5
+parseRowNumber       Parser               0.7    2.0
 
 
                                                                                    individual     inherited
 COST CENTRE                          MODULE                      no.     entries  %time %alloc   %time %alloc
 
-MAIN                                 MAIN                        114           0    7.7   23.3   100.0  100.0
+MAIN                                 MAIN                        114           0    3.9   23.8   100.0  100.0
  headerlen                           Types                       284           1    0.0    0.0     0.0    0.0
  sink                                Lib                         265           0    0.0    0.0     0.0    0.0
   showsPrec                          Lib                         271           1    0.0    0.0     0.0    0.0
@@ -59,67 +60,67 @@ MAIN                                 MAIN                        114           0
     computeAverages.(...)            Lib                         355           1    0.0    0.0     0.0    0.0
     computeAverages.sumVals          Lib                         354           1    0.0    0.0     0.0    0.0
     computeAverages.newresultEntry   Lib                         353           1    0.0    0.0     0.0    0.0
- parseRow                            Parser                      262      100001    0.0    0.0    69.9   67.4
-  parseRow.splittedRow               Parser                      287      100001    8.7    6.1     8.7    6.1
-  foldAp                             Parser                      286      400004    2.3    2.9    61.1   61.3
-   actuallyParseRowVal               Parser                      301      400004    0.2    0.0     0.2    0.0
-   parseRowNull                      Parser                      298           0    2.4    2.8    58.7   58.4
-    parseRowNumber                   Parser                      306           0    1.4    2.1    46.8   43.3
-     realN                           Parser                      308           0   26.8   24.8    45.3   41.2
-      fracN                          Parser                      311           0    0.0    0.1    18.5   16.4
-       fracN1                        Parser                      313           0   16.6   13.9    18.5   16.3
-        expN                         Parser                      320           0    0.0    0.1     0.9    1.1
-         expN1                       Parser                      321           0    0.4    0.6     0.8    1.0
-          zero                       Parser                      322           0    0.4    0.4     0.4    0.4
-        zero                         Parser                      315           0    0.3    0.3     1.0    1.3
-         expN                        Parser                      317           0    0.0    0.1     0.7    1.0
-          expN1                      Parser                      319           0    0.7    1.0     0.7    1.0
-      realN.\                        Parser                      309      199991    0.0    0.0     0.0    0.0
-    parseRowString                   Parser                      300           0    9.1   12.0     9.5   12.2
-     unstream/resize                 Data.Text.Internal.Fusion   304      192019    0.4    0.3     0.4    0.3
-  parseRow.parsingFuncs              Parser                      285      100001    0.0    0.0     0.0    0.0
+ parseRow                            Parser                      262     1000001    0.0    0.0    45.7   67.0
+  parseRow.splittedRow               Parser                      287     1000001   10.0    6.1    10.0    6.1
+  foldAp                             Parser                      286     4000004    2.1    2.9    35.7   60.9
+   actuallyParseRowVal               Parser                      301     4000004    0.7    0.0     0.7    0.0
+   parseRowNull                      Parser                      298           0    1.1    2.8    32.9   58.0
+    parseRowNumber                   Parser                      306           0    0.7    2.0    25.6   43.0
+     realN                           Parser                      308           0   14.7   24.7    24.9   41.0
+      fracN                          Parser                      311           0    0.1    0.1    10.3   16.3
+       fracN1                        Parser                      313           0    8.8   13.8    10.2   16.2
+        expN                         Parser                      320           0    0.0    0.1     0.8    1.1
+         expN1                       Parser                      321           0    0.3    0.6     0.8    1.0
+          zero                       Parser                      322           0    0.5    0.4     0.5    0.4
+        zero                         Parser                      315           0    0.1    0.3     0.6    1.3
+         expN                        Parser                      317           0    0.0    0.1     0.5    1.0
+          expN1                      Parser                      319           0    0.4    0.9     0.4    0.9
+      realN.\                        Parser                      309     1999826    0.0    0.0     0.0    0.0
+    parseRowString                   Parser                      300           0    5.9   11.9     6.1   12.2
+     unstream/resize                 Data.Text.Internal.Fusion   304     1920024    0.2    0.3     0.2    0.3
+  parseRow.parsingFuncs              Parser                      285     1000001    0.0    0.0     0.0    0.0
    parseRowVal                       Parser                      295           4    0.0    0.0     0.0    0.0
     coltype                          Types                       296           4    0.0    0.0     0.0    0.0
- conduit                             Lib                         245           1    0.0    0.0    22.0    9.1
+ conduit                             Lib                         245           1    0.0    0.0    50.1    9.1
   conduit.initial                    Lib                         281           1    0.0    0.0     0.0    0.0
    columnRecorderInit                Lib                         282           1    0.0    0.0     0.0    0.0
     rowlen                           Types                       283           1    0.0    0.0     0.0    0.0
-  conduitCount                       Accumulators.Basic          263           0    0.3    0.1     0.3    0.1
-  conduitSumsNulls                   Lib                         253           1    0.6    0.4     9.3    4.4
-   conduitNulls                      Accumulators.Basic          258           0    0.0    0.0     4.6    2.4
-    conduitFunc                      Accumulators.Basic          259      100002    0.1    0.2     4.6    2.4
-     conduitFunc.updatedRecord       Accumulators.Basic          339      100001    0.0    0.0     4.5    2.2
-      nullCounts                     Accumulators.Basic          340      100001    0.0    0.0     4.5    2.2
-       nullRowCount                  Types                       343      100001    1.0    0.8     1.0    0.8
-        isNull                       Types                       345      400004    0.0    0.0     0.0    0.0
-       summedVals                    Accumulators.Basic          341      100001    1.8    0.8     3.5    1.3
-        sumRowVals                   Types                       344      400004    0.5    0.1     0.5    0.1
-        rowzip                       Types                       342      100001    1.2    0.4     1.2    0.4
-   conduitSums                       Accumulators.Basic          255           0    0.0    0.0     4.0    1.6
-    conduitFunc                      Accumulators.Basic          256      100002    0.1    0.2     4.0    1.6
-     conduitFunc.updatedRecord       Accumulators.Basic          333      100001    0.0    0.0     3.9    1.4
-      summedVals                     Accumulators.Basic          334      100001    1.5    0.8     3.9    1.4
-       sumRowVals                    Types                       337      400004    1.5    0.1     1.5    0.1
-       rowzip                        Types                       335      100001    0.9    0.4     0.9    0.4
-  conduitMaxMin                      Lib                         246           1    0.5    0.4    12.5    4.6
-   conduitMin                        Accumulators.Basic          251           0    0.0    0.0     5.3    2.1
-    conduitFunc                      Accumulators.Basic          252      100002    0.2    0.2     5.3    2.1
-     conduitFunc.updatedRecord       Accumulators.Basic          324      100001    0.0    0.0     5.2    1.9
-      rowMin                         Accumulators.Basic          325      100001    1.5    0.7     5.2    1.9
-       rowMin.rowValMin              Accumulators.Basic          331      400004    0.2    0.0     0.2    0.0
-       rowMin.vals                   Accumulators.Basic          326      100001    1.4    0.7     3.5    1.2
-        preCompareMaxMin             Types                       330      400004    0.6    0.1     0.6    0.1
-        rowzip                       Types                       327      100001    1.4    0.4     1.4    0.4
-   conduitMax                        Accumulators.Basic          248           0    0.0    0.0     6.7    2.1
-    conduitFunc                      Accumulators.Basic          249      100002    0.1    0.2     6.7    2.1
-     conduitFunc.updatedRecord       Accumulators.Basic          277      100001    0.0    0.0     6.6    1.9
-      rowMax                         Accumulators.Basic          278      100001    1.8    0.7     6.6    1.9
-       rowMax.rowValMax              Accumulators.Basic          302      400004    0.8    0.0     0.8    0.0
-       rowMax.vals                   Accumulators.Basic          279      100001    2.1    0.7     4.0    1.2
-        preCompareMaxMin             Types                       294      400004    0.5    0.1     0.5    0.1
-        rowzip                       Types                       280      100001    1.4    0.4     1.4    0.4
- parseHead                           Parser                      228           1    0.0    0.0     0.1    0.0
-  parseHead'                         Parser                      230           0    0.0    0.0     0.1    0.0
+  conduitCount                       Accumulators.Basic          263           0    0.1    0.1     0.1    0.1
+  conduitSumsNulls                   Lib                         253           1    0.3    0.4    12.0    4.3
+   conduitNulls                      Accumulators.Basic          258           0    0.0    0.0     5.0    2.4
+    conduitFunc                      Accumulators.Basic          259     1000002    0.1    0.2     5.0    2.4
+     conduitFunc.updatedRecord       Accumulators.Basic          339     1000001    0.0    0.0     4.9    2.2
+      nullCounts                     Accumulators.Basic          340     1000001    0.0    0.0     4.9    2.2
+       nullRowCount                  Types                       343     1000001    0.7    0.8     0.7    0.8
+        isNull                       Types                       345     4000004    0.1    0.0     0.1    0.0
+       summedVals                    Accumulators.Basic          341     1000001    1.8    0.8     4.1    1.3
+        sumRowVals                   Types                       344     4000004    0.3    0.1     0.3    0.1
+        rowzip                       Types                       342     1000001    2.0    0.4     2.0    0.4
+   conduitSums                       Accumulators.Basic          255           0    0.0    0.0     6.7    1.6
+    conduitFunc                      Accumulators.Basic          256     1000002    0.1    0.2     6.7    1.6
+     conduitFunc.updatedRecord       Accumulators.Basic          333     1000001    0.0    0.0     6.6    1.4
+      summedVals                     Accumulators.Basic          334     1000001    1.6    0.8     6.6    1.4
+       sumRowVals                    Types                       337     4000004    2.3    0.1     2.3    0.1
+       rowzip                        Types                       335     1000001    2.7    0.4     2.7    0.4
+  conduitMaxMin                      Lib                         246           1    0.2    0.4    38.0    4.6
+   conduitMin                        Accumulators.Basic          251           0    0.0    0.0     9.7    2.1
+    conduitFunc                      Accumulators.Basic          252     1000002    0.1    0.2     9.7    2.1
+     conduitFunc.updatedRecord       Accumulators.Basic          324     1000001    0.0    0.0     9.7    1.9
+      rowMin                         Accumulators.Basic          325     1000001    2.7    0.7     9.7    1.9
+       rowMin.rowValMin              Accumulators.Basic          331     4000004    0.2    0.0     0.2    0.0
+       rowMin.vals                   Accumulators.Basic          326     1000001    4.5    0.7     6.8    1.2
+        preCompareMaxMin             Types                       330     4000004    0.3    0.1     0.3    0.1
+        rowzip                       Types                       327     1000001    2.0    0.4     2.0    0.4
+   conduitMax                        Accumulators.Basic          248           0    0.0    0.0    28.0    2.1
+    conduitFunc                      Accumulators.Basic          249     1000002    0.1    0.2    28.0    2.1
+     conduitFunc.updatedRecord       Accumulators.Basic          277     1000001    0.0    0.0    27.9    1.9
+      rowMax                         Accumulators.Basic          278     1000001    5.1    0.7    27.9    1.9
+       rowMax.rowValMax              Accumulators.Basic          302     4000004    2.8    0.0     2.8    0.0
+       rowMax.vals                   Accumulators.Basic          279     1000001   11.8    0.7    19.9    1.2
+        preCompareMaxMin             Types                       294     4000004    2.4    0.1     2.4    0.1
+        rowzip                       Types                       280     1000001    5.7    0.4     5.7    0.4
+ parseHead                           Parser                      228           1    0.0    0.0     0.0    0.0
+  parseHead'                         Parser                      230           0    0.0    0.0     0.0    0.0
    parseHeadCol                      Parser                      232           0    0.0    0.0     0.0    0.0
     parseColType                     Parser                      236           0    0.0    0.0     0.0    0.0
      parseStringTypeCol              Parser                      238           0    0.0    0.0     0.0    0.0
@@ -130,12 +131,12 @@ MAIN                                 MAIN                        114           0
  CAF                                 Main                        227           0    0.0    0.0     0.0    0.0
   sink                               Lib                         360           0    0.0    0.0     0.0    0.0
   conduitSummary                     Lib                         244           1    0.0    0.0     0.0    0.0
- CAF                                 Lib                         226           0    0.0    0.0     0.3    0.2
+ CAF                                 Lib                         226           0    0.0    0.0     0.2    0.2
   showsPrec                          Lib                         275           0    0.0    0.0     0.0    0.0
   showsPrec                          Lib                         272           0    0.0    0.0     0.0    0.0
   initialResult                      Lib                         268           1    0.0    0.0     0.0    0.0
-  conduit                            Lib                         260           0    0.0    0.0     0.3    0.2
-   conduitCount                      Accumulators.Basic          261      100002    0.3    0.2     0.3    0.2
+  conduit                            Lib                         260           0    0.0    0.0     0.2    0.2
+   conduitCount                      Accumulators.Basic          261     1000002    0.2    0.2     0.2    0.2
   sink                               Lib                         243           1    0.0    0.0     0.0    0.0
  CAF                                 Parser                      225           0    0.0    0.0     0.0    0.0
   expN1                              Parser                      318           1    0.0    0.0     0.0    0.0
