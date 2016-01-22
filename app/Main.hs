@@ -20,6 +20,8 @@ main = do
   [executable, number] <- getArgs
   
   -- kind of a cheap hack: run it once to get the header. actual run is later.
+  -- Todo: Figure out how to capture and process first result from stream
+  -- and pass result value on to all other conduits: using `isolate` function?
   (Inherited, fromProcess, ClosedStream, _) <-
     streamingProcess (shell $ executable ++ " 1")
 
@@ -38,6 +40,7 @@ main = do
         =$ sink
 
 -- print vals while they stream by in order to check on them
+-- Switch input/output to `Row` if you want to check on processed vals
 printConduit :: ConduitM BS.ByteString BS.ByteString IO ()
 printConduit = do
   val <- await
