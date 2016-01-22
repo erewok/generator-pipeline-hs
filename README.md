@@ -27,9 +27,9 @@ I settled on simply doing the processing and printing to STDOUT.
 
 ### Some Profiling Stats
 
-Some profiling stats are included. The basic processing algorithm is roughly linear to the linear to the size of the input stream. For instance, it sums results as they come in, but does process each result column for each type of result, and max/min are a simple comparison.
+Some profiling stats are included. The basic processing algorithm is roughly linear to the size of the input stream. 
 
-For the memory profiling (see [./generator-pipeline-exe.ps](./generator-pipeline-exe.ps)) the program was run to consume 100,000 results.
+For memory profiling (see [./generator-pipeline-exe.ps](./generator-pipeline-exe.ps)) the program was run to consume 100,000 results.
 
 For time profiling (see [./generator-pipeline-exe.prof](./generator-pipeline-exe.prof)), the program was run to consume 1,000,000 results. (It seems like parsing rows takes a surprising amount of time...).
 
@@ -41,6 +41,6 @@ Probably about 2.5 days total of coding, broken up over two weeks, but it was fu
 
 - A number of things should use the type system but do not, [index-based results for instance](./src/Lib.hs#L40).
 
-- The are `error` calls, which is the worst. With more time, those would be eliminated first.
+- The are [`error` calls](result column for each type of result, and max/min are a simple comparison.), which is the worst kind of shortcut. With more time, those would be eliminated first.
 
-- The Max/Min algorithms are incorrect. They compare a `0` on the left with any number on the right. If that first number or later numbers are 0, those results will be overwritten. This needs to be fixed.
+- The [Max/Min algorithms are incorrect](./src/Accumulators/Basic.hs#L83). They compare a `0` on the left with any number on the right. If that first number or later numbers are 0, those results will be overwritten. This needs to be fixed.
