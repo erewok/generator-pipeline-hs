@@ -65,9 +65,10 @@ nullCounts :: NullCounts -> Row -> Sums
 nullCounts record input = summedVals record (nullRowCount input)
 
 
--- The following implementations of Max/Min are flawed.
+-- Todo: The following implementations of Max/Min are flawed.
 -- would almost be better (more honest) to put in the lowest possible number here
--- and highest possible number for min
+-- and highest possible number for min. The real answer involves using Null on the left
+-- and switching to a number as soon as one appears.
 rowMax :: Maxima -> Row -> Maxima
 rowMax record input =
   let
@@ -77,7 +78,7 @@ rowMax record input =
   in Row $ map rowValMax vals
 
 
--- fix min: see note above
+-- Todo: fix min: see note above
 rowMin :: Minima -> Row -> Minima
 rowMin record input =
   let

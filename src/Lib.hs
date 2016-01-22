@@ -72,6 +72,8 @@ conduitMaxMin initial = ZipConduit (conduitMax initial) <* ZipConduit (conduitMi
 conduitSumsNulls :: Row -> ZipConduit Row Row IO ()
 conduitSumsNulls initial = ZipConduit (conduitSums initial) <* ZipConduit (conduitNulls initial)
 
+-- ToDo: this is just index-based for which result is which
+-- should be expressed in types somehow.
 conduitSummary :: Int -> ResultRows -> Conduit Row IO ResultRows
 conduitSummary n output = do
   val <- await
