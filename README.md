@@ -44,3 +44,5 @@ Probably about 2.5 days total of coding, broken up over two weeks, but it was fu
 - The are [`error` calls](result column for each type of result, and max/min are a simple comparison.), which is the worst kind of shortcut. With more time, those would be eliminated first.
 
 - The [Max/Min algorithms are incorrect](./src/Accumulators/Basic.hs#L83). They compare a `0` on the left with any number on the right. If that first number or later numbers are 0, those results will be overwritten. This needs to be fixed.
+
+- In this version the generator must be run twice (a first run with `generator exec 1`, see [Main.hs](./app/Main.hs#L25)) to grab the header in order to pass the parsed result to the Row parser conduit. This is kinda lame.
